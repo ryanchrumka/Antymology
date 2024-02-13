@@ -94,7 +94,7 @@ namespace Antymology.Terrain
                 // Calculate random position within the world bounds
                 int x = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
                 int z = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
-                int y = FindGroundLevel(x, z); // Ensures ants are spawned on the surface
+                int y = FindGroundLevel(x, z) + 1; // Ensures ants are spawned on the surface
 
                 Vector3 spawnPosition = new Vector3(x, y, z);
                 Instantiate(antPrefab, spawnPosition, Quaternion.identity);
