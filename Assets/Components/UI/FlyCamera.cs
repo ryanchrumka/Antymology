@@ -64,6 +64,25 @@ namespace Antymology.UI
                 transform.Translate(p);
             }
 
+            // Added this because the mouse on my computer wasn't working
+            // Allows X and Y axis rotation through arrow keys
+            // Arrow keys for camera rotation
+            if (Input.GetKey(KeyCode.UpArrow))
+            {
+                transform.Rotate(new Vector3(-1, 0, 0) * camSens);
+            }
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                transform.Rotate(new Vector3(1, 0, 0) * camSens);
+            }
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                transform.Rotate(new Vector3(0, -1, 0) * camSens, Space.World); 
+            }
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                transform.Rotate(new Vector3(0, 1, 0) * camSens, Space.World);
+            }
         }
 
         private Vector3 GetBaseInput()
