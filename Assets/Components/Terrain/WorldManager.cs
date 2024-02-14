@@ -17,6 +17,12 @@ namespace Antymology.Terrain
         public GameObject antPrefab;
 
         /// <summary>
+        /// The prefab containing the antQueen.
+        /// </summary>
+        public GameObject antQueenPrefab;
+
+
+        /// <summary>
         /// The material used for eech block.
         /// </summary>
         public Material blockMaterial;
@@ -88,7 +94,7 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
-            int numberOfAnts = 10; 
+            int numberOfAnts = 1; 
             for (int i = 0; i < numberOfAnts; i++)
             {
                 // Calculate random position within the world bounds
@@ -99,6 +105,13 @@ namespace Antymology.Terrain
                 Vector3 spawnPosition = new Vector3(x, y, z);
                 Instantiate(antPrefab, spawnPosition, Quaternion.identity);
             }
+
+            int a = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
+            int c = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
+            int b = FindGroundLevel(a, c) + 1; // Ensures ants are spawned on the surface
+
+            Vector3 spawnPosition2 = new Vector3(a, b, c);
+            Instantiate(antQueenPrefab, spawnPosition2, Quaternion.identity);
         }
 
         private int FindGroundLevel(int x, int z)
@@ -114,38 +127,33 @@ namespace Antymology.Terrain
         }
 
         // Map to keep track of occupied positions
-        private Dictionary<Vector3Int, GameObject> occupiedPositions = new Dictionary<Vector3Int, GameObject>();
-
+        private HashSet<Vector3Int> occupiedPositions = new HashSet<Vector3Int>();
 
         // Update the map when an ant moves
-        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition, GameObject ant)
+        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition)
         {
             // Check if the new position is already occupied
-            if (occupiedPositions.ContainsKey(newPosition)) return false; // Move blocked
-
+            if (occupiedPositions.Contains(newPosition))
+            {
+                return false; // Move blocked
+            }
             // Update the map
             occupiedPositions.Remove(oldPosition);
-            occupiedPositions[newPosition] = ant;
+            occupiedPositions.Add(newPosition);
 
             return true; // Move successful
         }
 
         // Add an ant to the map
-        public void AddAnt(Vector3Int position, GameObject ant)
+        public void AddAnt(Vector3Int position)
         {
-            if (!occupiedPositions.ContainsKey(position))
-            {
-                occupiedPositions[position] = ant;
-            }
+            occupiedPositions.Add(position);
         }
 
         // Remove an ant from the map
         public void RemoveAnt(Vector3Int position)
         {
-            if (occupiedPositions.ContainsKey(position))
-            {
-                occupiedPositions.Remove(position);
-            }
+             occupiedPositions.Remove(position);
         }
 
         #endregion
