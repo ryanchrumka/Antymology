@@ -38,35 +38,59 @@ public class AntBehaviour : MonoBehaviour
 
         Vector3Int antPosition = Vector3Int.FloorToInt(transform.position);
         AbstractBlock blockBeneath = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y - 1, antPosition.z);
+        Vector3Int bestMulchBlockPosition = Vector3Int.zero;
 
-        //Eat mulch
-        if (blockBeneath is MulchBlock)
+
+
+
+        //Scan for mulch and move there if the mulch exist
+
+        bool higherMulch = false;
+        int highestMulchBlockHeight = int.MinValue;
+        for (int a = -scanRadius; a <= scanRadius; a++)
+        {
+            for (int b = -2; b <= 2; b++)
+            {
+                for (int c = -scanRadius; c <= scanRadius; c++)
+                {
+                    AbstractBlock nearbyBlock = WorldManager.Instance.GetBlock(antPosition.x + a, antPosition.y + b, antPosition.z + c);
+                    if (nearbyBlock is MulchBlock)
+                    {
+                        if ((antPosition.y + b )> highestMulchBlockHeight)
+                        {
+                            higherMulch = true;
+                            highestMulchBlockHeight = (antPosition.y + b);
+                            bestMulchBlockPosition = new Vector3Int(antPosition.x + a, antPosition.y + b, antPosition.z + c);
+
+                        }
+                        
+                    }
+                }
+            }
+        }
+        if (highestMulchBlockHeight > antPosition.y)
+        {
+            transform.position = new Vector3(bestMulchBlockPosition.x, bestMulchBlockPosition.y + 1, bestMulchBlockPosition.z);
+        }
+
+        else if (blockBeneath is MulchBlock)
         {
             Debug.Log("Ate mulch.");
             currentHealth = Mathf.Min(currentHealth + mulchHealthAmount, maxHealth);
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
         }
-
-
-        //Scan for mulch and move there if the mulch exist
-
-
-        Vector3Int antPosition2 = Vector3Int.RoundToInt(transform.position);
-        for (int x = -scanRadius; x <= scanRadius; x++)
+        else if (highestMulchBlockHeight >= (antPosition.y-2) )
         {
-            for (int y = -2; y <= 2; y++)
-            {
-                for (int z = -scanRadius; z <= scanRadius; z++)
-                {
+            transform.position = new Vector3(bestMulchBlockPosition.x, bestMulchBlockPosition.y + 1, bestMulchBlockPosition.z);
 
-                    AbstractBlock nearbyBlock = WorldManager.Instance.GetBlock(antPosition.x + x, antPosition.y + y, antPosition.z + z);
-                    if (nearbyBlock is MulchBlock)
-                    {
-                        transform.position = new Vector3(antPosition.x + x,antPosition.y + y + 1, antPosition.z + z);
-                    }
-                }
-            }
         }
+        else
+        {
+            //Move behavior
+
+        }
+
+            
     }
 }
