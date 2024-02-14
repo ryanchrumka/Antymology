@@ -69,19 +69,19 @@ namespace Antymology.UI
             // Arrow keys for camera rotation
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                transform.Rotate(new Vector3(-1, 0, 0) * camSens);
+                transform.Rotate(new Vector3(-1, 0, 0));
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
-                transform.Rotate(new Vector3(1, 0, 0) * camSens);
+                transform.Rotate(new Vector3(1, 0, 0));
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
-                transform.Rotate(new Vector3(0, -1, 0) * camSens, Space.World); 
+                transform.Rotate(new Vector3(0, -1, 0) , Space.World); 
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
-                transform.Rotate(new Vector3(0, 1, 0) * camSens, Space.World);
+                transform.Rotate(new Vector3(0, 1, 0) , Space.World);
             }
         }
 
