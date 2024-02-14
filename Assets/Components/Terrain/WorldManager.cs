@@ -110,9 +110,43 @@ namespace Antymology.Terrain
                     return y;
                 }
             }
-            return 0; // Fallback to ground level if no ground is found, adjust as necessary
+            return 0; // Fallback to ground level if no ground is found
         }
 
+        // Map to keep track of occupied positions
+        private Dictionary<Vector3Int, GameObject> occupiedPositions = new Dictionary<Vector3Int, GameObject>();
+
+
+        // Update the map when an ant moves
+        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition, GameObject ant)
+        {
+            // Check if the new position is already occupied
+            if (occupiedPositions.ContainsKey(newPosition)) return false; // Move blocked
+
+            // Update the map
+            occupiedPositions.Remove(oldPosition);
+            occupiedPositions[newPosition] = ant;
+
+            return true; // Move successful
+        }
+
+        // Add an ant to the map
+        public void AddAnt(Vector3Int position, GameObject ant)
+        {
+            if (!occupiedPositions.ContainsKey(position))
+            {
+                occupiedPositions[position] = ant;
+            }
+        }
+
+        // Remove an ant from the map
+        public void RemoveAnt(Vector3Int position)
+        {
+            if (occupiedPositions.ContainsKey(position))
+            {
+                occupiedPositions.Remove(position);
+            }
+        }
 
         #endregion
 
