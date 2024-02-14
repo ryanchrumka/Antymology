@@ -22,6 +22,10 @@ public class AntBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Vector3Int antPosition = Vector3Int.FloorToInt(transform.position);
+        AbstractBlock blockBeneath = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y - 1, antPosition.z);
+        Vector3Int bestMulchBlockPosition = Vector3Int.zero;
+
 
         healthDeclineAccumulator += healthDeclineRate * Time.deltaTime;
         //Debug.Log("Current Health: " + currentHealth);
@@ -29,6 +33,18 @@ public class AntBehaviour : MonoBehaviour
         currentHealth -= decreaseAmount; // Apply the accumulated decrease
         healthDeclineAccumulator -= decreaseAmount; // Subtract the applied amount from the accumulator
         currentHealth = Mathf.Max(currentHealth, 0); // Ensure health doesn't go below 0
+
+        //Repeats the subtract health again if on an acid block so that overall decrease is 2x
+        if (blockBeneath is AcidicBlock)
+        {
+            healthDeclineAccumulator += healthDeclineRate * Time.deltaTime;
+            Debug.Log("Current Health: " + currentHealth);
+            decreaseAmount = Mathf.FloorToInt(healthDeclineAccumulator);
+            currentHealth -= decreaseAmount; // Apply the accumulated decrease
+            healthDeclineAccumulator -= decreaseAmount; // Subtract the applied amount from the accumulator
+            currentHealth = Mathf.Max(currentHealth, 0); // Ensure health doesn't go below 0
+
+        }
 
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
         WorldManager.Instance.AddAnt(currentPosition, gameObject);
@@ -40,9 +56,7 @@ public class AntBehaviour : MonoBehaviour
             WorldManager.Instance.RemoveAnt(currentPosition);
         }
 
-        Vector3Int antPosition = Vector3Int.FloorToInt(transform.position);
-        AbstractBlock blockBeneath = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y - 1, antPosition.z);
-        Vector3Int bestMulchBlockPosition = Vector3Int.zero;
+        
 
 
 
@@ -87,7 +101,7 @@ public class AntBehaviour : MonoBehaviour
 
         else if (blockBeneath is MulchBlock)
         {
-            Debug.Log("Ate mulch.");
+            //Debug.Log("Ate mulch.");
             currentHealth = Mathf.Min(currentHealth + mulchHealthAmount, maxHealth);
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
