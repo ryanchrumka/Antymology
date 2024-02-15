@@ -132,15 +132,18 @@ namespace Antymology.Terrain
         // Update the map when an ant moves
         public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition)
         {
+            Debug.Log("001.");
             // Check if the new position is already occupied
             if (occupiedPositions.Contains(newPosition))
             {
+                Debug.Log("001f.");
+
                 return false; // Move blocked
             }
             // Update the map
             occupiedPositions.Remove(oldPosition);
             occupiedPositions.Add(newPosition);
-
+            Debug.Log("001t.");
             return true; // Move successful
         }
 

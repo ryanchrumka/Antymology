@@ -60,10 +60,11 @@ public class AntBehaviour : MonoBehaviour
 
 
 
-        int highestMulchBlockHeight = int.MinValue;
-        int highestGrassBlockHeight = int.MinValue;
+        int highestMulchBlockHeight = -50000;
+        int highestGrassBlockHeight = -50000;
         Vector3Int bestMulchBlockPosition = Vector3Int.zero;
         Vector3Int bestGrassBlockPosition = Vector3Int.zero;
+        Vector3Int blockAbovePosition = Vector3Int.zero;
 
         for (int a = -scanRadius; a <= scanRadius; a++)
         {
@@ -83,16 +84,17 @@ public class AntBehaviour : MonoBehaviour
                             highestMulchBlockHeight = blockPosition.y;
                             bestMulchBlockPosition = blockPosition;
                         }
-                        else if (nearbyBlock is GrassBlock && currentHealth > 20 && (blockPosition.y > highestGrassBlockHeight))
+                        else if (nearbyBlock is GrassBlock && currentHealth > 20 && (blockPosition.y >= highestGrassBlockHeight))
                         {
                             highestGrassBlockHeight = blockPosition.y;
                             bestGrassBlockPosition = blockPosition;
+                            blockAbovePosition = new Vector3Int(blockPosition.x, blockPosition.y + 1, blockPosition.z);
                         }
                     }
                 }
             }
         }
-        if (highestGrassBlockHeight >= highestMulchBlockHeight - 1 && (highestGrassBlockHeight >= (antPosition.y - 2)))
+        if (highestGrassBlockHeight > highestMulchBlockHeight - 2 && (blockAbovePosition != antPosition))
         {
             MoveToBlock(bestGrassBlockPosition);
             Debug.Log("1");
