@@ -500,8 +500,34 @@ namespace Antymology.Terrain
                     }
         }
 
-        #endregion
+
+        private HashSet<AirBlock> pheromoneBlocks = new HashSet<AirBlock>();
+
+        public void TrackPheromoneBlock(AirBlock block)
+        {
+            if (!pheromoneBlocks.Contains(block))
+            {
+                pheromoneBlocks.Add(block);
+            }
+        }
+
+        void Update()
+        {
+            // Example of how to call DissipatePheromones on all AirBlocks in the world.
+            foreach (AirBlock airBlock in pheromoneBlocks)
+            {
+                if (airBlock != null)
+                {
+                    airBlock.DissipatePheromones();
+                    if (airBlock.getPheromoneLevel() <= 0)
+                    {
+                        pheromoneBlocks.Remove(airBlock);
+                    }
+                }
+            }
+        }
 
         #endregion
     }
+    #endregion
 }

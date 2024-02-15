@@ -26,6 +26,11 @@ public class AntBehaviour : MonoBehaviour
         AbstractBlock blockBeneath = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y - 1, antPosition.z);
         Vector3Int bestBlockPosition = Vector3Int.zero;
 
+        AbstractBlock block = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y, antPosition.z);
+        if (block is AirBlock airBlock)
+        {
+            airBlock.DepositPheromones(100);
+        }
 
         healthDeclineAccumulator += healthDeclineRate * Time.deltaTime;
         //Debug.Log("Current Health: " + currentHealth);

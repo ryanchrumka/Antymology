@@ -62,7 +62,6 @@ namespace Antymology.Terrain
             renderer = gameObject.AddComponent<MeshRenderer>();
             renderer.material = mat;
             collider = gameObject.AddComponent<MeshCollider>();
-            collider.convex = true;
         }
 
         /// <summary>
@@ -124,7 +123,6 @@ namespace Antymology.Terrain
             // Optimize, and normal calculation
             MeshUtility.Optimize(mesh);
             mesh.RecalculateNormals();
-            collider.sharedMesh = null;
             collider.sharedMesh = mesh;
         }
 

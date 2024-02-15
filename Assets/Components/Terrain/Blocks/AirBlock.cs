@@ -12,7 +12,7 @@ namespace Antymology.Terrain
     /// </summary>
     public class AirBlock : AbstractBlock
     {
-
+        public double pheromoneLevel = 0;
         #region Fields
 
         /// <summary>
@@ -55,7 +55,26 @@ namespace Antymology.Terrain
             throw new NotImplementedException();
         }
 
+        public double getPheromoneLevel()
+        {
+            return pheromoneLevel;
+        }
+
+
+        public void DepositPheromones(double amount)
+        {
+            pheromoneLevel += amount;
+            WorldManager.Instance.TrackPheromoneBlock(this);
+        }
+
         #endregion
 
+        public void DissipatePheromones()
+        {
+            if (pheromoneLevel > 0)
+            {
+                pheromoneLevel = Math.Max(0, pheromoneLevel - 1); // Decrease by 1, ensuring it doesn't go below 0.
+            }
+        }
     }
 }
