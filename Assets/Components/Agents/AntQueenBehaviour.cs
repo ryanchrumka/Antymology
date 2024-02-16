@@ -24,8 +24,9 @@ public class AntQueenBehaviour : MonoBehaviour
         if (!searchingForAnts)
         {
             // Keep searching for the lowest point not above mulch until health is too low.
-            if (health > health / 3) // Ensure she has more than 1/3 health left to place a block.
+            if (health > 50) // Ensure she has more than 1/2 health left to place a block and find a new position.
             {
+                Debug.Log("try place");
                 TryPlaceBlock();
             }
             else
@@ -42,18 +43,66 @@ public class AntQueenBehaviour : MonoBehaviour
 
     void TryPlaceBlock()
     {
+        Debug.Log("find lowest");
         Vector3Int lowestPoint = FindLowestPoint();
-        if (lowestPoint != Vector3Int.zero) // Assuming FindLowestPoint returns Vector3Int.zero if no suitable point found.
+        if (lowestPoint != Vector3Int.zero) 
         {
+            MoveToBlock(lowestPoint);
             PlaceBlockAt(lowestPoint);
-            health -= health / 3; // Deduct 1/3 of health for placing a block.
+            health -= 33; // Deduct 1/3 of health for placing a block.
+           
+            
+        }
+        else
+        {
+            if (true)
+            {
+                PlaceBlockAt(lowestPoint);
+                health -= 33; // Deduct 1/3 of health for placing a block.
+            }
         }
     }
 
     Vector3Int FindLowestPoint()
     {
-        
-        return Vector3Int.zero;
+        Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+        Vector3Int lowestPoint = currentPosition;
+        int searchRadius = 3;
+        int lowestY = int.MaxValue;
+
+        // Check immediate surroundings, defined by a 3x3 area centered on the ant.
+        for (int x = -searchRadius; x <= searchRadius; x++)
+        {
+            for (int z = -searchRadius; z <= searchRadius; z++)
+            {
+                Vector3Int checkPosition = new Vector3Int(currentPosition.x + x, currentPosition.y - 1, currentPosition.z + z);
+                while (checkPosition.y > 0)
+                {
+                    AbstractBlock blockBelow = WorldManager.Instance.GetBlock(checkPosition.x, checkPosition.y, checkPosition.z);
+                    AbstractBlock potentialMove = WorldManager.Instance.GetBlock(checkPosition.x, checkPosition.y + 1, checkPosition.z);
+                    Vector3Int potential = new Vector3Int(checkPosition.x, checkPosition.y + 1, checkPosition.z);
+                    // If the block below is not Air or Mulch, and is lower than the current lowest, update lowestPoint.
+                    if (!(blockBelow is AirBlock) && checkPosition.y < lowestY && potentialMove is AirBlock)
+                    {
+                        lowestPoint = potential;
+                        lowestY = checkPosition.y;
+                        break; // Break the while loop once a solid ground is found.
+                    }
+
+                    // Move one block down.
+                    checkPosition.y -= 1;
+                }
+            }
+        }
+
+        // If the lowest point found is still the initial position, no move is needed.
+        if (lowestPoint == currentPosition)
+        {
+            Debug.Log("find lowest = false");
+            return Vector3Int.zero; // Indicates no lower point was found.
+        }
+        Debug.Log("find lowest = true");
+        return lowestPoint;
     }
 
     void PlaceBlockAt(Vector3Int point)
@@ -67,4 +116,30 @@ public class AntQueenBehaviour : MonoBehaviour
         // Placeholder for roaming logic.
         // In the future, implement logic to follow pheromones or move randomly until other ants are found.
     }
+
+
+   private void MoveToBlock(Vector3Int blockPosition)
+    {
+        Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+        Vector3 newPos = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
+        Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
+        transform.position = newPos; // Successfully moved
+        
+    }
+
+    private bool MoveUp()
+    {
+        Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+        Vector3 newPos = new Vector3(currentPosition.x, currentPosition.y + 1, currentPosition.z);
+        Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
+        AbstractBlock potentialMove = WorldManager.Instance.GetBlock(currentPosition.x, currentPosition.y + 1, currentPosition.z);
+        if (potentialMove is AirBlock)
+        {
+            transform.position = newPos; // Successfully moved
+            return true;
+        }
+        return false;
+
+    }
+
 }
