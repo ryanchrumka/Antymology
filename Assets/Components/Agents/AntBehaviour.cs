@@ -43,7 +43,7 @@ public class AntBehaviour : MonoBehaviour
         if (blockBeneath is AcidicBlock)
         {
             healthDeclineAccumulator += healthDeclineRate * Time.deltaTime;
-            Debug.Log("Current Health: " + currentHealth);
+
             decreaseAmount = Mathf.FloorToInt(healthDeclineAccumulator);
             currentHealth -= decreaseAmount; // Apply the accumulated decrease
             healthDeclineAccumulator -= decreaseAmount; // Subtract the applied amount from the accumulator
@@ -102,16 +102,13 @@ public class AntBehaviour : MonoBehaviour
         if (highestGrassBlockHeight > highestMulchBlockHeight - 2 && (blockAbovePosition != antPosition))
         {
             MoveToBlock(bestGrassBlockPosition);
-            Debug.Log("1");
         }
         else if(highestMulchBlockHeight > antPosition.y)
         {
             MoveToBlock(bestMulchBlockPosition);
-            Debug.Log("2");
         }
         else if (blockBeneath is MulchBlock)
         {
-            Debug.Log("3");
             //Debug.Log("Ate mulch.");
             currentHealth = Mathf.Min(currentHealth + mulchHealthAmount, maxHealth);
 
@@ -120,7 +117,6 @@ public class AntBehaviour : MonoBehaviour
 
         }else if (blockBeneath is GrassBlock)
         {
-            Debug.Log("4");
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
 
@@ -128,18 +124,15 @@ public class AntBehaviour : MonoBehaviour
         //Move lower if not on a grass or mulch block
         else if (highestGrassBlockHeight >= (antPosition.y-2) )
         {
-            Debug.Log("5");
             MoveToBlock(bestGrassBlockPosition);
         }
         else if(highestMulchBlockHeight >= (antPosition.y - 2))
         {
-            Debug.Log("6");
             MoveToBlock(bestMulchBlockPosition);
 
         }
         else
         {
-            Debug.Log("Ant stuck.");
         }
 
 
@@ -151,10 +144,8 @@ public class AntBehaviour : MonoBehaviour
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
         Vector3 newPos = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
         Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
-        Debug.Log("a");
         if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
         {
-            Debug.Log("b");
             transform.position = newPos; // Successfully moved
         }
         else 

@@ -94,7 +94,7 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
-            int numberOfAnts = 1; 
+            int numberOfAnts = 10; 
             for (int i = 0; i < numberOfAnts; i++)
             {
                 // Calculate random position within the world bounds
@@ -132,18 +132,14 @@ namespace Antymology.Terrain
         // Update the map when an ant moves
         public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition)
         {
-            Debug.Log("001.");
             // Check if the new position is already occupied
             if (occupiedPositions.Contains(newPosition))
             {
-                Debug.Log("001f.");
-
                 return false; // Move blocked
             }
             // Update the map
             occupiedPositions.Remove(oldPosition);
             occupiedPositions.Add(newPosition);
-            Debug.Log("001t.");
             return true; // Move successful
         }
 
@@ -513,19 +509,31 @@ namespace Antymology.Terrain
 
         void Update()
         {
-            // Example of how to call DissipatePheromones on all AirBlocks in the world.
+            // Temporary list to hold blocks that need to be removed.
+            List<AirBlock> blocksToRemove = new List<AirBlock>();
+
+            // Iterate over all AirBlocks in the pheromoneBlocks HashSet.
             foreach (AirBlock airBlock in pheromoneBlocks)
             {
                 if (airBlock != null)
                 {
                     airBlock.DissipatePheromones();
+                    // Check if the pheromone level has dropped to 0 or below.
                     if (airBlock.getPheromoneLevel() <= 0)
                     {
-                        pheromoneBlocks.Remove(airBlock);
+                        // Add this block to the list of blocks to remove.
+                        blocksToRemove.Add(airBlock);
                     }
                 }
             }
+
+            // Remove the blocks that have no pheromones left.
+            foreach (AirBlock blockToRemove in blocksToRemove)
+            {
+                pheromoneBlocks.Remove(blockToRemove);
+            }
         }
+
 
         #endregion
     }

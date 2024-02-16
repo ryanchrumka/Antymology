@@ -12,7 +12,7 @@ namespace Antymology.Terrain
     /// </summary>
     public class AirBlock : AbstractBlock
     {
-        public double pheromoneLevel = 0;
+        public float pheromoneLevel = 0;
         #region Fields
 
         /// <summary>
@@ -55,13 +55,13 @@ namespace Antymology.Terrain
             throw new NotImplementedException();
         }
 
-        public double getPheromoneLevel()
+        public float getPheromoneLevel()
         {
             return pheromoneLevel;
         }
 
 
-        public void DepositPheromones(double amount)
+        public void DepositPheromones(float amount)
         {
             pheromoneLevel += amount;
             WorldManager.Instance.TrackPheromoneBlock(this);

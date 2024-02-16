@@ -26,7 +26,6 @@ public class AntQueenBehaviour : MonoBehaviour
             // Keep searching for the lowest point not above mulch until health is too low.
             if (health > 50) // Ensure she has more than 1/2 health left to place a block and find a new position.
             {
-                Debug.Log("try place");
                 TryPlaceBlock();
             }
             else
@@ -37,13 +36,12 @@ public class AntQueenBehaviour : MonoBehaviour
         else
         {
             // Implement roaming behavior to find other ants.
-            RoamForAnts();
+            MoveTowardsNearestHighPheromone();
         }
     }
 
     void TryPlaceBlock()
     {
-        Debug.Log("find lowest");
         Vector3Int lowestPoint = FindLowestPoint();
         if (lowestPoint != Vector3Int.zero) 
         {
@@ -57,7 +55,8 @@ public class AntQueenBehaviour : MonoBehaviour
         {
             if (true)
             {
-                PlaceBlockAt(lowestPoint);
+                Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+                PlaceBlockAt(currentPosition);
                 health -= 33; // Deduct 1/3 of health for placing a block.
             }
         }
@@ -71,13 +70,14 @@ public class AntQueenBehaviour : MonoBehaviour
         int lowestY = int.MaxValue;
 
         // Check immediate surroundings, defined by a 3x3 area centered on the ant.
-        for (int x = -searchRadius; x <= searchRadius; x++)
+        // Check immediate surroundings, defined by a 3x3 area centered on the ant.
+        for (int a = -searchRadius; a <= searchRadius; a++)
         {
-            for (int z = -searchRadius; z <= searchRadius; z++)
+            for (int b = 0; b <= searchRadius; b++)
             {
-                Vector3Int checkPosition = new Vector3Int(currentPosition.x + x, currentPosition.y - 1, currentPosition.z + z);
-                while (checkPosition.y > 0)
+                for (int c = -searchRadius; c <= searchRadius; c++)
                 {
+                    Vector3Int checkPosition = new Vector3Int(currentPosition.x + a, currentPosition.y - b, currentPosition.z + c);
                     AbstractBlock blockBelow = WorldManager.Instance.GetBlock(checkPosition.x, checkPosition.y, checkPosition.z);
                     AbstractBlock potentialMove = WorldManager.Instance.GetBlock(checkPosition.x, checkPosition.y + 1, checkPosition.z);
                     Vector3Int potential = new Vector3Int(checkPosition.x, checkPosition.y + 1, checkPosition.z);
@@ -91,30 +91,23 @@ public class AntQueenBehaviour : MonoBehaviour
 
                     // Move one block down.
                     checkPosition.y -= 1;
+
                 }
             }
+
         }
 
         // If the lowest point found is still the initial position, no move is needed.
-        if (lowestPoint == currentPosition)
+        if (lowestPoint.y >= currentPosition.y)
         {
-            Debug.Log("find lowest = false");
             return Vector3Int.zero; // Indicates no lower point was found.
         }
-        Debug.Log("find lowest = true");
         return lowestPoint;
     }
 
     void PlaceBlockAt(Vector3Int point)
     {
         WorldManager.Instance.SetBlock(point.x, point.y, point.z, new NestBlock());
-        Debug.Log("Placed block at: " + point);
-    }
-
-    void RoamForAnts()
-    {
-        // Placeholder for roaming logic.
-        // In the future, implement logic to follow pheromones or move randomly until other ants are found.
     }
 
 
@@ -141,5 +134,60 @@ public class AntQueenBehaviour : MonoBehaviour
         return false;
 
     }
+
+
+    void MoveTowardsNearestHighPheromone()
+    {
+        Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+        float highestPheromoneLevel = 0;
+        Vector3Int closestHighPheromonePosition = currentPosition; // Initialize with current position.
+        float closestDistance = float.MaxValue; // Initialize with a very high value.
+
+        int searchRadius = 10; // Define search radius.
+        int searchHeight = 5; // Define search height range above and below the current position.
+
+        for (int x = -searchRadius; x <= searchRadius; x++)
+        {
+            for (int y = -searchHeight; y <= searchHeight; y++)
+            {
+                for (int z = -searchRadius; z <= searchRadius; z++)
+                {
+                    Vector3Int checkPosition = currentPosition + new Vector3Int(x, y, z);
+                    AbstractBlock block = WorldManager.Instance.GetBlock(checkPosition.x, checkPosition.y, checkPosition.z);
+
+                    if (block is AirBlock airBlock)
+                    {
+                        float pheromoneLevel = airBlock.getPheromoneLevel(); // Assuming a method to get pheromone level.
+                        Debug.Log("pheromone level: " + pheromoneLevel);
+                        float distance = Vector3.Distance(currentPosition, checkPosition); // Use Vector3.Distance for 3D distance calculation.
+                                                                                           // Check if this block has a higher pheromone level and is closer than previously recorded blocks.
+                        if (pheromoneLevel > highestPheromoneLevel || (pheromoneLevel == highestPheromoneLevel && distance < closestDistance))
+                        {
+                            highestPheromoneLevel = pheromoneLevel;
+                            closestHighPheromonePosition = checkPosition;
+                            closestDistance = distance;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Move 1 step towards the closest high pheromone concentration block if it's not the current position.
+        if (closestHighPheromonePosition != currentPosition)
+        {
+            // Determine the step to move in each direction.
+            Vector3Int directionToMove = closestHighPheromonePosition - currentPosition;
+            Vector3Int moveStep = new Vector3Int((int)Mathf.Sign(directionToMove.x), (int)Mathf.Sign(directionToMove.y), (int)Mathf.Sign(directionToMove.z));
+
+            // Optional: Validate the move (e.g., check for obstacles or terrain height differences).
+            Vector3Int newPosition = currentPosition + moveStep;
+            if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
+            {
+                // Assuming TryMoveAnt includes validation and updating the ant's position.
+                transform.position += new Vector3(moveStep.x, moveStep.y, moveStep.z);
+            }
+        }
+    }
+
 
 }
