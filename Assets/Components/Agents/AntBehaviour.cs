@@ -11,12 +11,14 @@ public class AntBehaviour : MonoBehaviour
     public int mulchHealthAmount = 3; //The amount of health given for each mulch block
     public float healthDeclineAccumulator = 0f;
     public int scanRadius = 2; // How far the ant can "see" Mulch block
-
+    private Vector3Int lastPosition;
+    private Vector3Int lastPosition2;
 
     // Start is called before the first frame update
     void Start()
     {
         currentHealth = maxHealth;
+        WorldManager.Instance.RegisterAnt(this);
     }
 
     // Update is called once per frame
@@ -57,6 +59,7 @@ public class AntBehaviour : MonoBehaviour
         if (currentHealth <= 0)
         {
             Debug.Log("Ant died.");
+            WorldManager.Instance.UnregisterAnt(this);
             Destroy(gameObject);
             WorldManager.Instance.RemoveAnt(currentPosition);
         }
@@ -131,9 +134,6 @@ public class AntBehaviour : MonoBehaviour
             MoveToBlock(bestMulchBlockPosition);
 
         }
-        else
-        {
-        }
 
 
           
@@ -146,14 +146,27 @@ public class AntBehaviour : MonoBehaviour
         Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
         if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
         {
+            lastPosition = currentPosition;
+
             transform.position = newPos; // Successfully moved
         }
         else 
         {
-          
+
+            if (WorldManager.Instance.TryMoveAnt(currentPosition, lastPosition))
+            {
+                transform.position = lastPosition;
+            }
         }
     }
 
+
+    public void DecreaseHealth(int amount)
+    {
+        Debug.Log("Donoe health: " + currentHealth);
+        currentHealth -= amount;
+        currentHealth = Mathf.Max(currentHealth, 0); // Ensure health does not go negative.
+    }
 }
 
 

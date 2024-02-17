@@ -51,6 +51,7 @@ namespace Antymology.Terrain
 
         #region Initialization
 
+
         /// <summary>
         /// Awake is called before any start method is called.
         /// </summary>
@@ -534,6 +535,23 @@ namespace Antymology.Terrain
             }
         }
 
+        public List<AntBehaviour> allAnts = new List<AntBehaviour>();
+
+        public void RegisterAnt(AntBehaviour ant)
+        {
+            if (!allAnts.Contains(ant))
+            {
+                allAnts.Add(ant);
+            }
+        }
+
+        public void UnregisterAnt(AntBehaviour ant)
+        {
+            if (allAnts.Contains(ant))
+            {
+                allAnts.Remove(ant);
+            }
+        }
 
         #endregion
     }
