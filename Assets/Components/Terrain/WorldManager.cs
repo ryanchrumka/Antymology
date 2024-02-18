@@ -95,7 +95,7 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
-            int numberOfAnts = 10; 
+            int numberOfAnts = 25; 
             for (int i = 0; i < numberOfAnts; i++)
             {
                 // Calculate random position within the world bounds
