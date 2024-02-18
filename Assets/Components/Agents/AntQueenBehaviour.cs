@@ -20,6 +20,7 @@ public class AntQueenBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // If the queen has enough health to place a block, she does
         if (health >= 34)
         {
             TryPlaceBlock();
@@ -33,8 +34,10 @@ public class AntQueenBehaviour : MonoBehaviour
         }
     }
 
+    // If her magesty has enough health, she places a nest block
     void TryPlaceBlock()
     {
+        // Ensures she is placing the block at a lower point to prevent blocking too much mulch
         Vector3Int lowestPoint = FindLowestPoint();
         if (!lowestPoint.Equals(Vector3Int.FloorToInt(transform.position)))
         {
@@ -46,7 +49,7 @@ public class AntQueenBehaviour : MonoBehaviour
         }
         else
         {
-
+            // If no lower point, she places the block on her current position
             Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
             PlaceBlockAt(currentPosition);
             health -= 33; // Deduct 1/3 of health for placing a block.
@@ -54,6 +57,9 @@ public class AntQueenBehaviour : MonoBehaviour
         }
     }
 
+    // Searches a nearby radius to find the lowest point
+    // This way the queen doesn't cover too much mulch or grass
+    // This is to help build the biggest nest possible
     Vector3Int FindLowestPoint()
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
@@ -61,7 +67,6 @@ public class AntQueenBehaviour : MonoBehaviour
         int searchRadius = 3;
         int lowestY = currentPosition.y;
 
-        // Check immediate surroundings, defined by a 3x3 area centered on the ant.
         // Check immediate surroundings, defined by a 3x3 area centered on the ant.
         for (int a = -searchRadius; a <= searchRadius; a++)
         {
@@ -82,8 +87,6 @@ public class AntQueenBehaviour : MonoBehaviour
                         break; // Break the while loop once a solid ground is found.
                     }
 
-                    // Move one block down.
-                    checkPosition.y -= 1;
 
                 }
             }
@@ -91,8 +94,6 @@ public class AntQueenBehaviour : MonoBehaviour
         }
 
         // If the lowest point found is still the initial position, no move is needed.
-        Debug.Log("lowest y: " + lowestPoint.y);
-        Debug.Log("current pos: " + currentPosition.y);
         if (lowestPoint.y.Equals(currentPosition.y - 1))
         {
             return currentPosition; // Indicates no lower point was found.
@@ -100,12 +101,13 @@ public class AntQueenBehaviour : MonoBehaviour
         return lowestPoint;
     }
 
+    // Places block at required vecor
     void PlaceBlockAt(Vector3Int point)
     {
         WorldManager.Instance.SetBlock(point.x, point.y, point.z, new NestBlock());
     }
 
-
+    // Moves to the new position
     private void MoveToBlock(Vector3Int blockPosition)
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
@@ -115,6 +117,7 @@ public class AntQueenBehaviour : MonoBehaviour
 
     }
 
+    // Moves up by 1 if there is no airblock above
     private bool MoveUp()
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
@@ -130,6 +133,7 @@ public class AntQueenBehaviour : MonoBehaviour
 
     }
 
+    // Moves down. Only called if there is an airblock below
     private void MoveDown()
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
@@ -140,7 +144,7 @@ public class AntQueenBehaviour : MonoBehaviour
 
     }
 
-
+    // Her magesty scans a nearby radius and moves to the highest pheromone concentration
     void MoveTowardsNearestHighPheromone()
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
@@ -151,6 +155,8 @@ public class AntQueenBehaviour : MonoBehaviour
         int searchRadius = 20; // Define search radius.
         int searchHeight = 8; // Define search height range above and below the current position.
 
+
+        // Scans x,y,z
         for (int x = -searchRadius; x <= searchRadius; x++)
         {
             for (int y = -searchHeight; y <= searchHeight; y++)
@@ -162,9 +168,10 @@ public class AntQueenBehaviour : MonoBehaviour
 
                     if (block is AirBlock airBlock)
                     {
-                        float pheromoneLevel = airBlock.getPheromoneLevel(); // Assuming a method to get pheromone level.
-                        float distance = Vector3.Distance(currentPosition, checkPosition); // Use Vector3.Distance for 3D distance calculation.
-                                                                                           // Check if this block has a higher pheromone level and is closer than previously recorded blocks.
+                        float pheromoneLevel = airBlock.getPheromoneLevel(); 
+                        float distance = Vector3.Distance(currentPosition, checkPosition); // Distance calculation.
+
+                        // Check if this block has a higher pheromone level and is closer than previously recorded blocks.
                         if (pheromoneLevel > highestPheromoneLevel || (pheromoneLevel == highestPheromoneLevel && distance < closestDistance))
                         {
                             highestPheromoneLevel = pheromoneLevel;
@@ -183,7 +190,7 @@ public class AntQueenBehaviour : MonoBehaviour
             Vector3Int directionToMove = closestHighPheromonePosition - currentPosition;
             Vector3Int moveStep = new Vector3Int((int)Mathf.Sign(directionToMove.x), (int)Mathf.Sign(directionToMove.y), (int)Mathf.Sign(directionToMove.z));
 
-            // Optional: Validate the move (e.g., check for obstacles or terrain height differences).
+            // Validate the move
             Vector3Int newPosition = currentPosition + moveStep;
 
             transform.position += new Vector3(moveStep.x, moveStep.y, moveStep.z);
@@ -198,6 +205,7 @@ public class AntQueenBehaviour : MonoBehaviour
         }
     }
 
+    // If there is an ant within 2 blocks, the ant transfers health to the queen
     void CheckForNearbyAntsAndReceiveHealth()
     {
         foreach (var ant in WorldManager.Instance.allAnts)
@@ -205,11 +213,13 @@ public class AntQueenBehaviour : MonoBehaviour
             if (ant != this && Vector3.Distance(transform.position, ant.transform.position) <= 2)
             {
                 TransferHealthFromAnt(ant);
-                break; // Assuming health from one ant at a time.
+                break;
             }
         }
     }
 
+
+    // Decreaeses health from the donor and transfers to the queen. Zero sum gain.
     void TransferHealthFromAnt(AntBehaviour donorAnt)
     {
         // Check if the donor ant has enough health to give.

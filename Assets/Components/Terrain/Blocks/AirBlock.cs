@@ -13,6 +13,7 @@ namespace Antymology.Terrain
     public class AirBlock : AbstractBlock
     {
         public float pheromoneLevel = 0;
+        public float dissipationRate = 3f;
         #region Fields
 
         /// <summary>
@@ -55,12 +56,14 @@ namespace Antymology.Terrain
             throw new NotImplementedException();
         }
 
+
+        // Gets pheromone level of a block
         public float getPheromoneLevel()
         {
             return pheromoneLevel;
         }
 
-
+        // Increases pheromone level.
         public void DepositPheromones(float amount)
         {
             pheromoneLevel += amount;
@@ -69,11 +72,13 @@ namespace Antymology.Terrain
 
         #endregion
 
+        // Decreases the number of pheromones on the block
         public void DissipatePheromones()
         {
             if (pheromoneLevel > 0)
             {
-                pheromoneLevel = Math.Max(0, pheromoneLevel - 1); // Decrease by 1, ensuring it doesn't go below 0.
+                // Decrease pheromone level based on the dissipation rate and time elapsed since last frame.
+                pheromoneLevel = Mathf.Max(0, pheromoneLevel - dissipationRate * Time.deltaTime);
             }
         }
     }

@@ -95,14 +95,17 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
+
+            // Currently 25 ants
             int numberOfAnts = 25;
             for (int i = 0; i < numberOfAnts; i++)
             {
-                // Calculate random position within the world bounds
+                // Calculate random position within the world bounds for each ant
                 int x = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
                 int z = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
                 int y = FindGroundLevel(x, z) + 1; // Ensures ants are spawned on the surface
 
+                // Spawns ants
                 Vector3 spawnPosition = new Vector3(x, y, z);
                 Instantiate(antPrefab, spawnPosition, Quaternion.identity);
             }
@@ -111,10 +114,13 @@ namespace Antymology.Terrain
             int c = RNG.Next(0, ConfigurationManager.Instance.World_Diameter * ConfigurationManager.Instance.Chunk_Diameter);
             int b = FindGroundLevel(a, c) + 1; // Ensures ants are spawned on the surface
 
+            // Spawns a single queen ant
             Vector3 spawnPosition2 = new Vector3(a, b, c);
             Instantiate(antQueenPrefab, spawnPosition2, Quaternion.identity);
         }
 
+
+        // Finds the ground so that ants aren't spawned inside of a block
         private int FindGroundLevel(int x, int z)
         {
             for (int y = ConfigurationManager.Instance.World_Height * ConfigurationManager.Instance.Chunk_Diameter - 1; y >= 0; y--)
@@ -536,6 +542,7 @@ namespace Antymology.Terrain
 
         public List<AntBehaviour> allAnts = new List<AntBehaviour>();
 
+        // Registers an ant
         public void RegisterAnt(AntBehaviour ant)
         {
             if (!allAnts.Contains(ant))
@@ -544,6 +551,7 @@ namespace Antymology.Terrain
             }
         }
 
+        // Un-registers an ant if it dies.
         public void UnregisterAnt(AntBehaviour ant)
         {
             if (allAnts.Contains(ant))
