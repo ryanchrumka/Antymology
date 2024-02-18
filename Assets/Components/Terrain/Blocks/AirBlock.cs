@@ -13,7 +13,6 @@ namespace Antymology.Terrain
     public class AirBlock : AbstractBlock
     {
         public float pheromoneLevel = 0;
-        public float dissipationRate = 3f;
         #region Fields
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace Antymology.Terrain
             if (pheromoneLevel > 0)
             {
                 // Decrease pheromone level based on the dissipation rate and time elapsed since last frame.
-                pheromoneLevel = Mathf.Max(0, pheromoneLevel - dissipationRate * Time.deltaTime);
+                pheromoneLevel = Mathf.Max(0, pheromoneLevel - 1);
             }
         }
     }

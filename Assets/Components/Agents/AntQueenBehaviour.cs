@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Antymology.Terrain;
+using TMPro;
 
 public class AntQueenBehaviour : MonoBehaviour
 {
@@ -10,16 +11,21 @@ public class AntQueenBehaviour : MonoBehaviour
     public int healthDeclineRate = 1; // The rate at which health declines.
     public int mulchHealthAmount = 3; //The amount of health for each mulch block
     public float healthDeclineAccumulator = 0f;
+    private int nestBlockCount;
 
     // Start is called before the first frame update
     void Start()
     {
+        nestBlockCount = 0;
         health = maxHealth;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Updates screen
+        WorldManager.Instance.UpdateNestBlockCount(nestBlockCount);
+
         // If the queen has enough health to place a block, she does
         if (health >= 34)
         {
@@ -105,6 +111,7 @@ public class AntQueenBehaviour : MonoBehaviour
     void PlaceBlockAt(Vector3Int point)
     {
         WorldManager.Instance.SetBlock(point.x, point.y, point.z, new NestBlock());
+        nestBlockCount += 1;
     }
 
     // Moves to the new position

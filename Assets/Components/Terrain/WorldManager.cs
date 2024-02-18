@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Antymology.Terrain
 {
@@ -46,7 +47,7 @@ namespace Antymology.Terrain
         /// Random number generator.
         /// </summary>
         private SimplexNoise SimplexNoise;
-
+        private Text nestBlockCountText;
         #endregion
 
         #region Initialization
@@ -88,6 +89,50 @@ namespace Antymology.Terrain
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
 
             GenerateAnts();
+
+            CreateUI();
+        }
+
+        // Shows # of nest blocks
+        void CreateUI()
+        {
+            // Create a new Canvas GameObject.
+            GameObject canvasGameObject = new GameObject("Canvas");
+            Canvas canvas = canvasGameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasGameObject.AddComponent<CanvasScaler>();
+            canvasGameObject.AddComponent<GraphicRaycaster>();
+
+            // Ensure the canvas is properly scaled.
+            CanvasScaler canvasScaler = canvasGameObject.GetComponent<CanvasScaler>();
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(1920, 1080);
+
+            // Create a Text GameObject.
+            GameObject textGameObject = new GameObject("NestBlockCount");
+            textGameObject.transform.parent = canvasGameObject.transform;
+
+            // Set up the Text component.
+            nestBlockCountText = textGameObject.AddComponent<Text>();
+            nestBlockCountText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            nestBlockCountText.text = "Nest Blocks: 0";
+            nestBlockCountText.fontSize = 24;
+
+            // Position the Text element.
+            RectTransform rectTransform = textGameObject.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new Vector2(10, -10);
+            rectTransform.sizeDelta = new Vector2(500, 200);
+            rectTransform.anchorMin = new Vector2(0, 1);
+            rectTransform.anchorMax = new Vector2(0, 1);
+            rectTransform.pivot = new Vector2(0, 1);
+        }
+
+        public void UpdateNestBlockCount(int count)
+        {
+            if (nestBlockCountText != null)
+            {
+                nestBlockCountText.text = $"Nest Blocks: {count}";
+            }
         }
 
         /// <summary>
