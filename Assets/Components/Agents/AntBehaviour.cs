@@ -11,14 +11,14 @@ public class AntBehaviour : MonoBehaviour
     public int mulchHealthAmount = 3; //The amount of health given for each mulch block
     public float healthDeclineAccumulator = 0f;
     public int scanRadius = 2; // How far the ant can "see" Mulch block
-    public bool stuck;
+    private Vector3Int lastPosition;
+    private Vector3Int lastPosition2;
 
     // Start is called before the first frame update
     void Start()
     {
         currentHealth = maxHealth;
         WorldManager.Instance.RegisterAnt(this);
-        stuck = false;
     }
 
     // Update is called once per frame
@@ -31,7 +31,7 @@ public class AntBehaviour : MonoBehaviour
         AbstractBlock block = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y, antPosition.z);
         if (block is AirBlock airBlock)
         {
-            airBlock.DepositPheromones(30);
+            airBlock.DepositPheromones(100);
         }
 
         healthDeclineAccumulator += healthDeclineRate * Time.deltaTime;
@@ -64,15 +64,9 @@ public class AntBehaviour : MonoBehaviour
             WorldManager.Instance.RemoveAnt(currentPosition);
         }
 
-        scan();
-          
-    }
 
-    void scan()
-    {
-        Vector3Int antPosition = Vector3Int.FloorToInt(transform.position);
-        AbstractBlock blockBeneath = WorldManager.Instance.GetBlock(antPosition.x, antPosition.y - 1, antPosition.z);
-        Vector3Int bestBlockPosition = Vector3Int.zero;
+
+
 
         int highestMulchBlockHeight = -50000;
         int highestGrassBlockHeight = -50000;
@@ -112,7 +106,7 @@ public class AntBehaviour : MonoBehaviour
         {
             MoveToBlock(bestGrassBlockPosition);
         }
-        else if (highestMulchBlockHeight > antPosition.y)
+        else if(highestMulchBlockHeight > antPosition.y)
         {
             MoveToBlock(bestMulchBlockPosition);
         }
@@ -124,25 +118,25 @@ public class AntBehaviour : MonoBehaviour
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
 
-        }
-        else if (blockBeneath is GrassBlock)
+        }else if (blockBeneath is GrassBlock)
         {
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
 
         }
         //Move lower if not on a grass or mulch block
-        else if (highestGrassBlockHeight >= (antPosition.y - 2))
+        else if (highestGrassBlockHeight >= (antPosition.y-2) )
         {
             MoveToBlock(bestGrassBlockPosition);
         }
-        else if (highestMulchBlockHeight >= (antPosition.y - 2))
+        else if(highestMulchBlockHeight >= (antPosition.y - 2))
         {
             MoveToBlock(bestMulchBlockPosition);
 
         }
 
 
+          
     }
 
     void MoveToBlock(Vector3Int blockPosition)
@@ -152,16 +146,17 @@ public class AntBehaviour : MonoBehaviour
         Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
         if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
         {
+            lastPosition = currentPosition;
 
             transform.position = newPos; // Successfully moved
         }
-        else if (stuck)
+        else 
         {
-            transform.position = newPos;
-        }
-        else
-        {
-            stuck = true;
+
+            if (WorldManager.Instance.TryMoveAnt(currentPosition, lastPosition))
+            {
+                transform.position = lastPosition;
+            }
         }
     }
 

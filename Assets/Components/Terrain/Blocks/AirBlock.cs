@@ -12,9 +12,6 @@ namespace Antymology.Terrain
     /// </summary>
     public class AirBlock : AbstractBlock
     {
-        // The rate at which pheromones dissipate per second.
-        public float dissipationRate = 5f;
-
         public float pheromoneLevel = 0;
         #region Fields
 
@@ -66,8 +63,7 @@ namespace Antymology.Terrain
 
         public void DepositPheromones(float amount)
         {
-            float pheromonesPlus = pheromoneLevel + amount;
-            pheromoneLevel = Mathf.Min(100, pheromonesPlus);
+            pheromoneLevel += amount;
             WorldManager.Instance.TrackPheromoneBlock(this);
         }
 
@@ -77,7 +73,7 @@ namespace Antymology.Terrain
         {
             if (pheromoneLevel > 0)
             {
-                pheromoneLevel = Mathf.Max(0, pheromoneLevel - dissipationRate * Time.deltaTime);
+                pheromoneLevel = Math.Max(0, pheromoneLevel - 1); // Decrease by 1, ensuring it doesn't go below 0.
             }
         }
     }
