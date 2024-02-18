@@ -128,26 +128,39 @@ namespace Antymology.Terrain
         }
 
         // Map to keep track of occupied positions
-        private HashSet<Vector3Int> occupiedPositions = new HashSet<Vector3Int>();
+        private Dictionary<Vector3Int, GameObject> occupiedPositions = new Dictionary<Vector3Int, GameObject>();
 
         // Update the map when an ant moves
-        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition)
+        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition, GameObject ant)
         {
-            // Check if the new position is already occupied
-            if (occupiedPositions.Contains(newPosition))
+            // Check if the new position is already occupied by a different ant
+            if (occupiedPositions.TryGetValue(newPosition, out var existingAnt))
             {
-                return false; // Move blocked
+                // Allow the move if the ant is moving to its own position
+                if (existingAnt == ant)
+                {
+                    return true; // The ant is essentially not moving
+                }
+
+                // Otherwise, the move is blocked by a different ant
+                return false;
             }
-            // Update the map
-            occupiedPositions.Remove(oldPosition);
-            occupiedPositions.Add(newPosition);
+
+            // Update the map: remove the old position and add the new one
+            if (oldPosition != newPosition) // Prevent unnecessary removal if not moving
+            {
+                occupiedPositions.Remove(oldPosition);
+                occupiedPositions[newPosition] = ant;
+            }
+
             return true; // Move successful
         }
 
+
         // Add an ant to the map
-        public void AddAnt(Vector3Int position)
+        public void AddAnt(Vector3Int position, GameObject ant)
         {
-            occupiedPositions.Add(position);
+            occupiedPositions[position] = ant;
         }
 
         // Remove an ant from the map
