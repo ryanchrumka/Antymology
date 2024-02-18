@@ -13,6 +13,7 @@ public class AntBehaviour : MonoBehaviour
     public int scanRadius = 2; // How far the ant can "see" Mulch block
     private Vector3Int lastPosition;
     private Vector3Int lastPosition2;
+    public bool isDonor = false;
 
     // Start is called before the first frame update
     void Start()
@@ -54,8 +55,7 @@ public class AntBehaviour : MonoBehaviour
         }
 
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
-        WorldManager.Instance.AddAnt(currentPosition);
-
+  
         if (currentHealth <= 0)
         {
             Debug.Log("Ant died.");
@@ -70,9 +70,13 @@ public class AntBehaviour : MonoBehaviour
 
         int highestMulchBlockHeight = -50000;
         int highestGrassBlockHeight = -50000;
+        int secondHighestMulchBlockHeight = -50000;
+        int secondHighestGrassBlockHeight = -50000;
         Vector3Int bestMulchBlockPosition = Vector3Int.zero;
         Vector3Int bestGrassBlockPosition = Vector3Int.zero;
         Vector3Int blockAbovePosition = Vector3Int.zero;
+        Vector3Int secondBestMulchBlockPosition = Vector3Int.zero;
+        Vector3Int secondBestGrassBlockPosition = Vector3Int.zero;
 
         for (int a = -scanRadius; a <= scanRadius; a++)
         {
@@ -85,33 +89,66 @@ public class AntBehaviour : MonoBehaviour
 
                     // Ensures ant doesn't go inside of a block
                     AbstractBlock blockAbove = WorldManager.Instance.GetBlock(blockPosition.x, blockPosition.y + 1, blockPosition.z);
-                    if (blockAbove is AirBlock)
-                    { // Ensures the ant doesn't go inside of a block
-                        if (nearbyBlock is MulchBlock && (blockPosition.y > highestMulchBlockHeight))
+                    if (nearbyBlock is MulchBlock)
+                    {
+                        if (blockPosition.y > highestMulchBlockHeight)
                         {
+                            // Update second highest before updating highest
+                            secondHighestMulchBlockHeight = highestMulchBlockHeight;
+                            secondBestMulchBlockPosition = bestMulchBlockPosition;
+
                             highestMulchBlockHeight = blockPosition.y;
                             bestMulchBlockPosition = blockPosition;
                         }
-                        else if (nearbyBlock is GrassBlock && currentHealth > 20 && (blockPosition.y >= highestGrassBlockHeight))
+                        else if (blockPosition.y > secondHighestMulchBlockHeight)
                         {
+                            secondHighestMulchBlockHeight = blockPosition.y;
+                            secondBestMulchBlockPosition = blockPosition;
+                        }
+                    }
+                    else if (nearbyBlock is GrassBlock && currentHealth > 20)
+                    {
+                        if (blockPosition.y > highestGrassBlockHeight)
+                        {
+                            // Update second highest before updating highest
+                            secondHighestGrassBlockHeight = highestGrassBlockHeight;
+                            secondBestGrassBlockPosition = bestGrassBlockPosition;
+
                             highestGrassBlockHeight = blockPosition.y;
                             bestGrassBlockPosition = blockPosition;
-                            blockAbovePosition = new Vector3Int(blockPosition.x, blockPosition.y + 1, blockPosition.z);
+                        }
+                        else if (blockPosition.y > secondHighestGrassBlockHeight)
+                        {
+                            secondHighestGrassBlockHeight = blockPosition.y;
+                            secondBestGrassBlockPosition = blockPosition;
                         }
                     }
                 }
             }
         }
+        bool moved = false;
+
         if (highestGrassBlockHeight > highestMulchBlockHeight - 2 && (blockAbovePosition != antPosition))
         {
-            MoveToBlock(bestGrassBlockPosition);
+            moved = MoveToBlock(bestGrassBlockPosition, secondBestGrassBlockPosition);
+           
         }
         else if(highestMulchBlockHeight > antPosition.y)
         {
-            MoveToBlock(bestMulchBlockPosition);
+            moved = MoveToBlock(bestMulchBlockPosition, secondBestMulchBlockPosition);
+            if (isDonor)
+            {
+                Debug.Log("2");
+            }
         }
         else if (blockBeneath is MulchBlock)
         {
+            // moved = MoveToBlock(bestMulchBlockPosition);
+            moved = true;
+            if (isDonor)
+            {
+                Debug.Log("3");
+            }
             //Debug.Log("Ate mulch.");
             currentHealth = Mathf.Min(currentHealth + mulchHealthAmount, maxHealth);
 
@@ -120,6 +157,11 @@ public class AntBehaviour : MonoBehaviour
 
         }else if (blockBeneath is GrassBlock)
         {
+           // MoveToBlock(bestMulchBlockPosition);
+            if (isDonor)
+            {
+                Debug.Log("4");
+            }
             WorldManager.Instance.SetBlock(antPosition.x, antPosition.y - 1, antPosition.z, new AirBlock());
             transform.position = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
 
@@ -127,43 +169,70 @@ public class AntBehaviour : MonoBehaviour
         //Move lower if not on a grass or mulch block
         else if (highestGrassBlockHeight >= (antPosition.y-2) )
         {
-            MoveToBlock(bestGrassBlockPosition);
+            moved = MoveToBlock(bestGrassBlockPosition, secondBestGrassBlockPosition);
+            if (isDonor)
+            {
+                Debug.Log("5");
+            }
         }
         else if(highestMulchBlockHeight >= (antPosition.y - 2))
         {
-            MoveToBlock(bestMulchBlockPosition);
+            if (isDonor)
+            {
+                Debug.Log("6");
+            }
+            moved = MoveToBlock(bestMulchBlockPosition, secondBestMulchBlockPosition);
 
         }
+        if (!moved)
+        {
+            if (secondBestGrassBlockPosition.y >= (antPosition.y - 2))
+            {
+                Vector3 newPos = new Vector3(secondBestGrassBlockPosition.x, secondBestGrassBlockPosition.y + 1, secondBestGrassBlockPosition.z);
+                Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
+                transform.position = newPosition;
+            }else if(secondBestMulchBlockPosition.y >= antPosition.y - 2)
+            {
 
+                Vector3 newPos = new Vector3(secondBestMulchBlockPosition.x, secondBestMulchBlockPosition.y + 1, secondBestMulchBlockPosition.z);
+                Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
+                transform.position = newPosition;
+            }
+        }
 
           
     }
 
-    void MoveToBlock(Vector3Int blockPosition)
+    public bool MoveToBlock(Vector3Int blockPosition, Vector3Int secondBestBlockPosition)
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
-        Vector3 newPos = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
-        Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
-        if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
-        {
-            lastPosition = currentPosition;
+        bool moved = false;
 
-            transform.position = newPos; // Successfully moved
+        Vector3Int newPosition = blockPosition + Vector3Int.up; // Adjust for ground level.
+        if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition, this.gameObject))
+        {
+            transform.position = newPosition; // Successfully moved to the best position.
+            moved = true;
         }
-        else 
+        else
         {
-
-            if (WorldManager.Instance.TryMoveAnt(currentPosition, lastPosition))
+            newPosition = secondBestBlockPosition + Vector3Int.up; // Adjust for ground level.
+            if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition, this.gameObject))
             {
-                transform.position = lastPosition;
+                transform.position = newPosition; // Successfully moved to the second-best position.
+                moved = true;
             }
         }
+
+        return moved;
     }
+
 
 
     public void DecreaseHealth(int amount)
     {
-        Debug.Log("Donoe health: " + currentHealth);
+        isDonor = true;
+        Debug.Log("Donor health: " + currentHealth);
         currentHealth -= amount;
         currentHealth = Mathf.Max(currentHealth, 0); // Ensure health does not go negative.
     }

@@ -176,7 +176,7 @@ public class AntQueenBehaviour : MonoBehaviour
 
             // Optional: Validate the move (e.g., check for obstacles or terrain height differences).
             Vector3Int newPosition = currentPosition + moveStep;
-            if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
+            if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition, this.gameObject))
             {
                 // Assuming TryMoveAnt includes validation and updating the ant's position.
                 transform.position += new Vector3(moveStep.x, moveStep.y, moveStep.z);
