@@ -95,7 +95,7 @@ namespace Antymology.Terrain
         /// </summary>
         private void GenerateAnts()
         {
-            int numberOfAnts = 10; 
+            int numberOfAnts = 25;
             for (int i = 0; i < numberOfAnts; i++)
             {
                 // Calculate random position within the world bounds
@@ -128,45 +128,32 @@ namespace Antymology.Terrain
         }
 
         // Map to keep track of occupied positions
-        private Dictionary<Vector3Int, GameObject> occupiedPositions = new Dictionary<Vector3Int, GameObject>();
+        private HashSet<Vector3Int> occupiedPositions = new HashSet<Vector3Int>();
 
         // Update the map when an ant moves
-        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition, GameObject ant)
+        public bool TryMoveAnt(Vector3Int oldPosition, Vector3Int newPosition)
         {
-            // Check if the new position is already occupied by a different ant
-            if (occupiedPositions.TryGetValue(newPosition, out var existingAnt))
+            // Check if the new position is already occupied
+            if (occupiedPositions.Contains(newPosition))
             {
-                // Allow the move if the ant is moving to its own position
-                if (existingAnt == ant)
-                {
-                    return true; // The ant is essentially not moving
-                }
-
-                // Otherwise, the move is blocked by a different ant
-                return false;
+                return false; // Move blocked
             }
-
-            // Update the map: remove the old position and add the new one
-            if (oldPosition != newPosition) // Prevent unnecessary removal if not moving
-            {
-                occupiedPositions.Remove(oldPosition);
-                occupiedPositions[newPosition] = ant;
-            }
-
+            // Update the map
+            occupiedPositions.Remove(oldPosition);
+            occupiedPositions.Add(newPosition);
             return true; // Move successful
         }
 
-
         // Add an ant to the map
-        public void AddAnt(Vector3Int position, GameObject ant)
+        public void AddAnt(Vector3Int position)
         {
-            occupiedPositions[position] = ant;
+            occupiedPositions.Add(position);
         }
 
         // Remove an ant from the map
         public void RemoveAnt(Vector3Int position)
         {
-             occupiedPositions.Remove(position);
+            occupiedPositions.Remove(position);
         }
 
         #endregion
@@ -212,7 +199,7 @@ namespace Antymology.Terrain
                 ChunkZCoordinate < 0 ||
                 ChunkXCoordinate >= Blocks.GetLength(0) ||
                 ChunkYCoordinate >= Blocks.GetLength(1) ||
-                ChunkZCoordinate >= Blocks.GetLength(2) 
+                ChunkZCoordinate >= Blocks.GetLength(2)
             )
                 return new AirBlock();
 
@@ -239,7 +226,6 @@ namespace Antymology.Terrain
                 WorldZCoordinate > Blocks.GetLength(2)
             )
             {
-                Debug.Log("Attempted to set a block which didn't exist");
                 return;
             }
 
@@ -459,9 +445,9 @@ namespace Antymology.Terrain
             int updateY = Mathf.FloorToInt(worldYCoordinate / ConfigurationManager.Instance.Chunk_Diameter);
             int updateZ = Mathf.FloorToInt(worldZCoordinate / ConfigurationManager.Instance.Chunk_Diameter);
             Chunks[updateX, updateY, updateZ].updateNeeded = true;
-            
+
             // Also flag all 6 neighbours for update as well
-            if(updateX - 1 >= 0)
+            if (updateX - 1 >= 0)
                 Chunks[updateX - 1, updateY, updateZ].updateNeeded = true;
             if (updateX + 1 < Chunks.GetLength(0))
                 Chunks[updateX + 1, updateY, updateZ].updateNeeded = true;

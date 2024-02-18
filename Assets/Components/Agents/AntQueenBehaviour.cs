@@ -10,7 +10,6 @@ public class AntQueenBehaviour : MonoBehaviour
     public int healthDeclineRate = 1; // The rate at which health declines.
     public int mulchHealthAmount = 3; //The amount of health for each mulch block
     public float healthDeclineAccumulator = 0f;
-    private Vector3Int lastPosition;
 
     // Start is called before the first frame update
     void Start()
@@ -21,9 +20,9 @@ public class AntQueenBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (health >= 50)
+        if (health >= 34)
         {
-           TryPlaceBlock();
+            TryPlaceBlock();
 
         }
         else
@@ -37,21 +36,21 @@ public class AntQueenBehaviour : MonoBehaviour
     void TryPlaceBlock()
     {
         Vector3Int lowestPoint = FindLowestPoint();
-        if (!lowestPoint.Equals(Vector3Int.FloorToInt(transform.position))) 
+        if (!lowestPoint.Equals(Vector3Int.FloorToInt(transform.position)))
         {
             MoveToBlock(lowestPoint);
             PlaceBlockAt(lowestPoint);
             health -= 33; // Deduct 1/3 of health for placing a block.
-           
-            
+
+
         }
         else
         {
- 
-          Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
-          PlaceBlockAt(currentPosition);
-          health -= 33; // Deduct 1/3 of health for placing a block.
-          MoveUp();
+
+            Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+            PlaceBlockAt(currentPosition);
+            health -= 33; // Deduct 1/3 of health for placing a block.
+            MoveUp();
         }
     }
 
@@ -94,7 +93,7 @@ public class AntQueenBehaviour : MonoBehaviour
         // If the lowest point found is still the initial position, no move is needed.
         Debug.Log("lowest y: " + lowestPoint.y);
         Debug.Log("current pos: " + currentPosition.y);
-        if (lowestPoint.y.Equals(currentPosition.y-1))
+        if (lowestPoint.y.Equals(currentPosition.y - 1))
         {
             return currentPosition; // Indicates no lower point was found.
         }
@@ -107,13 +106,13 @@ public class AntQueenBehaviour : MonoBehaviour
     }
 
 
-   private void MoveToBlock(Vector3Int blockPosition)
+    private void MoveToBlock(Vector3Int blockPosition)
     {
         Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
         Vector3 newPos = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
         Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
         transform.position = newPos; // Successfully moved
-        
+
     }
 
     private bool MoveUp()
@@ -131,6 +130,16 @@ public class AntQueenBehaviour : MonoBehaviour
 
     }
 
+    private void MoveDown()
+    {
+        Vector3Int currentPosition = Vector3Int.FloorToInt(transform.position);
+        Vector3 newPos = new Vector3(currentPosition.x, currentPosition.y - 1, currentPosition.z);
+        Vector3Int newPosition = Vector3Int.FloorToInt(newPos);
+        AbstractBlock potentialMove = WorldManager.Instance.GetBlock(currentPosition.x, currentPosition.y + 1, currentPosition.z);
+        transform.position = newPos; // Successfully moved
+
+    }
+
 
     void MoveTowardsNearestHighPheromone()
     {
@@ -139,8 +148,8 @@ public class AntQueenBehaviour : MonoBehaviour
         Vector3Int closestHighPheromonePosition = currentPosition; // Initialize with current position.
         float closestDistance = 200; // Initialize with a very high value.
 
-        int searchRadius = 15; // Define search radius.
-        int searchHeight = 7; // Define search height range above and below the current position.
+        int searchRadius = 20; // Define search radius.
+        int searchHeight = 8; // Define search height range above and below the current position.
 
         for (int x = -searchRadius; x <= searchRadius; x++)
         {
@@ -176,11 +185,16 @@ public class AntQueenBehaviour : MonoBehaviour
 
             // Optional: Validate the move (e.g., check for obstacles or terrain height differences).
             Vector3Int newPosition = currentPosition + moveStep;
+
+            transform.position += new Vector3(moveStep.x, moveStep.y, moveStep.z);
+            Vector3Int currentPos = Vector3Int.FloorToInt(transform.position);
+            AbstractBlock blockBelow = WorldManager.Instance.GetBlock(currentPos.x, currentPos.y - 1, currentPos.z);
+            if (blockBelow is AirBlock) ;
             if (WorldManager.Instance.TryMoveAnt(currentPosition, newPosition))
             {
-                // Assuming TryMoveAnt includes validation and updating the ant's position.
-                transform.position += new Vector3(moveStep.x, moveStep.y, moveStep.z);
+                MoveDown();
             }
+
         }
     }
 
@@ -202,16 +216,12 @@ public class AntQueenBehaviour : MonoBehaviour
         if (donorAnt.currentHealth > 20)
         {
             int healthTransferAmount = Mathf.Min(66, donorAnt.currentHealth - 20);
-            healthTransferAmount = Mathf.Min(100-health, healthTransferAmount);
+            healthTransferAmount = Mathf.Min(100 - health, healthTransferAmount);
             donorAnt.DecreaseHealth(healthTransferAmount); // Decrease donor's health.
             health += healthTransferAmount; // Increase queen's health.
 
         }
-        else
-        {
-            health = 100; // Increase queen's health.
-            donorAnt.DecreaseHealth(100);
-        }
+
     }
 
 
